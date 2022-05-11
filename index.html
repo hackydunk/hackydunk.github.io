@@ -2,6 +2,8 @@
 
 <label for="machine">Machine:</label>
 <input type="text" id="machine" name="machine">
+<label for="scale">Scale:</label>
+<input type="number" id="scale" name="scale">
 <button onclick="draw()">Click me</button>
 
 <canvas id="mtm" width="1200" height="1200"></canvas>
@@ -35,7 +37,7 @@
     function draw() {
 
         // general properties
-        scale = apex.item("P526_SCALE").getValue()
+        scale = document.querySelector("scale").textContent;
         ctx.scale(scale, scale);
 
         var fontSize = 28;
