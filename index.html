@@ -36,14 +36,14 @@
     function draw() {
 
         // general properties
-        scale = document.querySelector("scale").textContent;
+        scale = document.querySelector("#scale").textContent;
         ctx.scale(scale, scale);
 
         var fontSize = 28;
         ctx.font = fontSize + 'px sans-serif';
 
         // get the machine definition
-        machine = document.querySelector("machine").textContent;
+        machine = document.querySelector("#machine").textContent;
         machine = machine.split("").join("+");
         machine = machine.replaceAll("+F+", "=");
 
@@ -107,7 +107,7 @@
         }
 
         // draw coordinate systems
-        machine = document.querySelector("machine").textContent;
+        machine = document.querySelector("#machine").textContent;
         //machine = machine.replaceAll("T", "");
         let step = 360 / machine.length;
 
@@ -163,7 +163,7 @@
         }
 
         // draw vectors between coordinate systems
-        machine = document.querySelector("machine").textContent;
+        machine = document.querySelector("#machine").textContent;
         let p1 = "F" + machine.split("F")[0].split("").reverse().join("");
         let p2 = "F" + machine.split("F")[1];
         console.log(p1, p2);
@@ -241,7 +241,7 @@
         ctx.fillStyle = 'black';
 
         // list linear carriages
-        machine = document.querySelector("machine").textContent;
+        machine = document.querySelector("#machine").textContent;
         ctx.fillText('Linear Carriages', 10, 250);
 
         var x = 10;
@@ -257,7 +257,7 @@
         }
 
         // list rotary carriages
-        machine = document.querySelector("machine").textContent;
+        machine = document.querySelector("#machine").textContent;
         ctx.fillText('Rotary Carriages', 10, 350);
 
         var x = 10;
@@ -274,7 +274,7 @@
 
 
         // list frame paths
-        machine = document.querySelector("machine").textContent;
+        machine = document.querySelector("#machine").textContent;
         ctx.fillText('Paths from Frame to FP', 10, 450);
 
         p1 = p1.replaceAll("F", "");
