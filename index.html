@@ -1,16 +1,20 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
 
 <label for="machine">Machine:</label>
-<input type="text" id="machine" name="machine"><br>
+<input type="text" id="machine" name="machine" title="The name of the machine similar (e.g PXFZYT).">
 <label for="scale">Scale:</label>
-<input type="number" id="scale" name="scale"><br>
-<button onclick="draw()">Click me</button><br>
+<input type="number" id="scale" name="scale" title="Scale the drawing by this factor (e.g 0.25)">
+<button onclick="draw()">Draw</button><br>
 <canvas id="mtm" width="1200" height="1200"></canvas>
 
 <script>
-
-    var canvas = document.getElementById('mtm');
-    var ctx = canvas.getContext('2d');
 
     function degrees_to_radians(degrees) {
         var pi = Math.PI;
@@ -35,15 +39,21 @@
 
     function draw() {
 
+
+        var canvas = document.getElementById('mtm');
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);       
+
         // general properties
-        scale = document.querySelector("#scale").textContent;
+        ctx.save();
+        scale = document.querySelector("#scale").value;
         ctx.scale(scale, scale);
 
         var fontSize = 28;
         ctx.font = fontSize + 'px sans-serif';
 
         // get the machine definition
-        machine = document.querySelector("#machine").textContent;
+        machine = document.querySelector("#machine").value;
         machine = machine.split("").join("+");
         machine = machine.replaceAll("+F+", "=");
 
@@ -107,7 +117,7 @@
         }
 
         // draw coordinate systems
-        machine = document.querySelector("#machine").textContent;
+        machine = document.querySelector("#machine").value;
         //machine = machine.replaceAll("T", "");
         let step = 360 / machine.length;
 
@@ -163,7 +173,7 @@
         }
 
         // draw vectors between coordinate systems
-        machine = document.querySelector("#machine").textContent;
+        machine = document.querySelector("#machine").value;
         let p1 = "F" + machine.split("F")[0].split("").reverse().join("");
         let p2 = "F" + machine.split("F")[1];
         console.log(p1, p2);
@@ -241,7 +251,7 @@
         ctx.fillStyle = 'black';
 
         // list linear carriages
-        machine = document.querySelector("#machine").textContent;
+        machine = document.querySelector("#machine").value;
         ctx.fillText('Linear Carriages', 10, 250);
 
         var x = 10;
@@ -257,7 +267,7 @@
         }
 
         // list rotary carriages
-        machine = document.querySelector("#machine").textContent;
+        machine = document.querySelector("#machine").value;
         ctx.fillText('Rotary Carriages', 10, 350);
 
         var x = 10;
@@ -274,7 +284,7 @@
 
 
         // list frame paths
-        machine = document.querySelector("#machine").textContent;
+        machine = document.querySelector("#machine").value;
         ctx.fillText('Paths from Frame to FP', 10, 450);
 
         p1 = p1.replaceAll("F", "");
@@ -301,6 +311,7 @@
             x += text.width + 10;
         }
 
+        ctx.restore();
     }
 
 </script>
