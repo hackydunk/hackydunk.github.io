@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -42,7 +43,7 @@
 
         var canvas = document.getElementById('mtm');
         var ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);       
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // general properties
         ctx.save();
@@ -104,7 +105,7 @@
             var text = ctx.measureText(char);
             ctx.fillText(char, x, y);
 
-            if ("XYZABCPT".includes(char)) {
+            if ("XYZUVWABCDEPT".includes(char)) {
                 ctx.beginPath();
                 ctx.moveTo(x, y - fontSize);
                 ctx.lineTo(x + text.width, y - fontSize);
@@ -118,7 +119,7 @@
 
         // draw coordinate systems
         machine = document.querySelector("#machine").value;
-        //machine = machine.replaceAll("T", "");
+        machine = machine.replaceAll("T", "");
         let step = 360 / machine.length;
 
         var x_start = 800;
@@ -136,19 +137,39 @@
             x = x_start + x;
             y = y_start + y;
 
-            dict.push({
-                name: machine[i - 1],
-                x: x,
-                y: y,
-                angle: step * i
+            if (machine[i - 1] == "P") {
 
-            })
+                dict.push({
+                    name: "P",
+                    x: x,
+                    y: y,
+                    angle: step * i
 
-            if (machine[i - 1] === "P" || machine[i - 1] === "T") {
+                })
+
+                dict.push({
+                    name: "T",
+                    x: x,
+                    y: y,
+                    angle: step * i + 360
+
+                })
+
+            } else {
+                dict.push({
+                    name: machine[i-1],
+                    x: x,
+                    y: y,
+                    angle: step * i
+
+                })
+            }
+
+            if (machine[i - 1] === "P") {
                 ctx.beginPath();
                 ctx.arc(x, y, 5, degrees_to_radians(0), degrees_to_radians(360));
                 ctx.fill();
-                ctx.fillText(machine[i - 1], x - fontSize, y + fontSize);
+                ctx.fillText("P", x - fontSize, y + fontSize);
 
             } else {
                 ctx.beginPath();
@@ -172,11 +193,12 @@
             }
         }
 
+        console.log(dict)
+
         // draw vectors between coordinate systems
         machine = document.querySelector("#machine").value;
         let p1 = "F" + machine.split("F")[0].split("").reverse().join("");
         let p2 = "F" + machine.split("F")[1];
-        console.log(p1, p2);
 
         let paths = [p1, p2];
 
@@ -193,7 +215,6 @@
 
                 let curr = paths[k][i];
                 let next = paths[k][i + 1];
-                console.log(curr, next);
 
                 curr = dict.filter(thing => thing.name === curr)[0];
                 next = dict.filter(thing => thing.name === next)[0];
@@ -218,15 +239,12 @@
                 let real_theta = 0;
                 let real_r = r;
                 let offset = 20;
-
+                
                 if (curr.angle < next.angle) {
                     real_theta = (next.angle - curr.angle) / 2 + curr.angle;
                 } else {
                     real_theta = (curr.angle - next.angle) / 2 + next.angle;
                 }
-
-                console.log(next.name, real_theta);
-
 
                 real_theta = degrees_to_radians(real_theta);
 
