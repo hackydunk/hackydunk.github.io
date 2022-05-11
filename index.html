@@ -2,18 +2,306 @@
 
 <label for="machine">Machine:</label>
 <input type="text" id="machine" name="machine">
-<button onclick="draw()">Click me</button> 
+<button onclick="draw()">Click me</button>
 
-</form>
+<canvas id="mtm" width="1200" height="1200"></canvas>
 
 <script>
 
-    function draw() {
-        console.log('testing!');
+    var canvas = document.getElementById('mtm');
+    var ctx = canvas.getContext('2d');
+
+    function degrees_to_radians(degrees) {
+        var pi = Math.PI;
+        return degrees * (pi / 180);
     }
-    
-    </script>
-    
+
+    function midpoint(x1, y1, x2, y2) {
+        return [(x1 + x2) / 2, (y1 + y2) / 2];
+    }
+
+    function canvas_arrow(ctx, fromx, fromy, tox, toy) {
+        var headlen = 10; // length of head in pixels
+        var dx = tox - fromx;
+        var dy = toy - fromy;
+        var angle = Math.atan2(dy, dx);
+        ctx.moveTo(fromx, fromy);
+        ctx.lineTo(tox, toy);
+        ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+        ctx.moveTo(tox, toy);
+        ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+    }
+
+    function draw() {
+
+        // general properties
+        scale = apex.item("P526_SCALE").getValue()
+        ctx.scale(scale, scale);
+
+        var fontSize = 28;
+        ctx.font = fontSize + 'px sans-serif';
+
+        // get the machine definition
+        machine = document.querySelector("machine").textContent;
+        machine = machine.split("").join("+");
+        machine = machine.replaceAll("+F+", "=");
+
+        // show the symbolic vector math
+        ctx.fillText('Symbolic Vector Equations', 10, 50);
+
+        var x = 10;
+        var y = 100;
+
+        for (let char of machine) {
+
+            var text = ctx.measureText(char);
+            ctx.fillText(char, x, y);
+
+            if ("XYZUVWABCDEPT".includes(char)) {
+                ctx.beginPath();
+                ctx.moveTo(x, y - fontSize);
+                ctx.lineTo(x + text.width, y - fontSize);
+                ctx.stroke();
+                ctx.lineTo(x + text.width - 5, y - fontSize - 4);
+                ctx.stroke();
+            }
+
+            x += text.width + 10;
+        }
+
+        machine = machine.split('=');
+        if (machine[0].includes("P")) {
+
+            solved = 'P=' + machine[1]
+            for (let char of machine[0].replaceAll("P", "").replaceAll("+", "")) {
+                solved = solved + "-" + char
+            }
+
+        } else {
+
+            solved = 'P=' + machine[0]
+            for (let char of machine[1].replaceAll("P", "").replaceAll("+", "")) {
+                solved = solved + "-" + char
+            }
+        }
+
+        x = 10;
+        y = 150;
+
+        for (let char of solved) {
+
+            var text = ctx.measureText(char);
+            ctx.fillText(char, x, y);
+
+            if ("XYZABCPT".includes(char)) {
+                ctx.beginPath();
+                ctx.moveTo(x, y - fontSize);
+                ctx.lineTo(x + text.width, y - fontSize);
+                ctx.stroke();
+                ctx.lineTo(x + text.width - 5, y - fontSize - 4);
+                ctx.stroke();
+            }
+
+            x += text.width + 10;
+        }
+
+        // draw coordinate systems
+        machine = document.querySelector("machine").textContent;
+        //machine = machine.replaceAll("T", "");
+        let step = 360 / machine.length;
+
+        var x_start = 800;
+        var y_start = 400;
+        var r = 250;
+
+        // dict to keep track of where points are
+        let dict = [];
+
+        for (i = 1; i <= machine.length; i++) {
+
+            let x = r * Math.cos(degrees_to_radians(i * step));
+            let y = r * Math.sin(degrees_to_radians(i * step));
+
+            x = x_start + x;
+            y = y_start + y;
+
+            dict.push({
+                name: machine[i - 1],
+                x: x,
+                y: y,
+                angle: step * i
+
+            })
+
+            if (machine[i - 1] === "P" || machine[i - 1] === "T") {
+                ctx.beginPath();
+                ctx.arc(x, y, 5, degrees_to_radians(0), degrees_to_radians(360));
+                ctx.fill();
+                ctx.fillText(machine[i - 1], x - fontSize, y + fontSize);
+
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(x, y - 50);
+                ctx.lineTo(x - 5, y - 50 + 10);
+                ctx.moveTo(x, y - 50);
+                ctx.lineTo(x + 5, y - 50 + 10);
+                ctx.moveTo(x, y - 50);
+                ctx.lineTo(x, y);
+                ctx.lineTo(x + 50, y);
+                ctx.lineTo(x + 50 - 10, y + 5);
+                ctx.moveTo(x + 50, y);
+                ctx.lineTo(x + 50 - 10, y - 5);
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + 25, y - 25);
+                ctx.lineTo(x + 15, y - 25);
+                ctx.moveTo(x + 25, y - 25);
+                ctx.lineTo(x + 25, y - 15);
+                ctx.stroke();
+                ctx.fillText('cs' + machine[i - 1], x - fontSize, y + fontSize);
+            }
+        }
+
+        // draw vectors between coordinate systems
+        machine = document.querySelector("machine").textContent;
+        let p1 = "F" + machine.split("F")[0].split("").reverse().join("");
+        let p2 = "F" + machine.split("F")[1];
+        console.log(p1, p2);
+
+        let paths = [p1, p2];
+
+        for (let k = 0; k < paths.length; k++) {
+            for (let i = 0; i < paths[k].length - 1; i++) {
+
+                if (k == 0) {
+                    ctx.strokeStyle = 'blue';
+                    ctx.fillStyle = 'blue';
+                } else {
+                    ctx.strokeStyle = 'red';
+                    ctx.fillStyle = 'red';
+                }
+
+                let curr = paths[k][i];
+                let next = paths[k][i + 1];
+                console.log(curr, next);
+
+                curr = dict.filter(thing => thing.name === curr)[0];
+                next = dict.filter(thing => thing.name === next)[0];
+
+                p_mid = midpoint(curr.x, curr.y, next.x, next.y);
+                p_start = midpoint(curr.x, curr.y, p_mid[0], p_mid[1]);
+                p_end = midpoint(p_mid[0], p_mid[1], next.x, next.y);
+
+                p_start_2 = midpoint(p_start[0], p_start[1], p_mid[0], p_mid[1]);
+                p_end_2 = midpoint(p_mid[0], p_mid[1], p_end[0], p_end[1]);
+
+                ctx.beginPath();
+                canvas_arrow(ctx, p_start_2[0], p_start_2[1], p_end_2[0], p_end_2[1]);
+                ctx.stroke();
+
+                x = p_mid[0];
+                y = p_mid[1];
+
+                real_x = x - x_start;
+                real_y = y - y_start;
+
+                let real_theta = 0;
+                let real_r = r;
+                let offset = 20;
+
+                if (curr.angle < next.angle) {
+                    real_theta = (next.angle - curr.angle) / 2 + curr.angle;
+                } else {
+                    real_theta = (curr.angle - next.angle) / 2 + next.angle;
+                }
+
+                console.log(next.name, real_theta);
+
+
+                real_theta = degrees_to_radians(real_theta);
+
+                x = (real_r + offset) * Math.cos(real_theta);
+                y = (real_r + offset) * Math.sin(real_theta);
+
+                x = x + x_start;
+                y = y + y_start;
+
+                ctx.fillText(next.name, x, y);
+                ctx.beginPath();
+                ctx.moveTo(x, y - fontSize);
+                ctx.lineTo(x + text.width, y - fontSize);
+                ctx.stroke();
+                ctx.lineTo(x + text.width - 5, y - fontSize - 4);
+                ctx.stroke();
+
+            }
+        }
+
+        ctx.strokeStyle = 'black';
+        ctx.fillStyle = 'black';
+
+        // list linear carriages
+        machine = document.querySelector("machine").textContent;
+        ctx.fillText('Linear Carriages', 10, 250);
+
+        var x = 10;
+        var y = 290;
+
+        for (let char of machine) {
+
+            if ("XYZUVW".includes(char)) {
+                var text = ctx.measureText(char);
+                ctx.fillText(char, x, y);
+                x += text.width + 10;
+            }
+        }
+
+        // list rotary carriages
+        machine = document.querySelector("machine").textContent;
+        ctx.fillText('Rotary Carriages', 10, 350);
+
+        var x = 10;
+        var y = 390;
+
+        for (let char of machine) {
+
+            if ("ABCDE".includes(char)) {
+                var text = ctx.measureText(char);
+                ctx.fillText(char, x, y);
+                x += text.width + 10;
+            }
+        }
+
+
+        // list frame paths
+        machine = document.querySelector("machine").textContent;
+        ctx.fillText('Paths from Frame to FP', 10, 450);
+
+        p1 = p1.replaceAll("F", "");
+        p2 = p2.replaceAll("F", "");
+
+        var x = 10;
+        var y = 490;
+
+        for (let char of p1) {
+            ctx.strokeStyle = 'blue';
+            ctx.fillStyle = 'blue';
+            var text = ctx.measureText(char);
+            ctx.fillText(char, x, y);
+            x += text.width + 10;
+        }
+
+        x = 10;
+
+        for (let char of p2) {
+            ctx.strokeStyle = 'red';
+            ctx.fillStyle = 'red';
+            var text = ctx.measureText(char);
+            ctx.fillText(char, x, y + 30);
+            x += text.width + 10;
+        }
+
+    }
+
+</script>
+
 </html>
-
-
